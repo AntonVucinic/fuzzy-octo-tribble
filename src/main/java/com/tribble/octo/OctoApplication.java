@@ -10,4 +10,5 @@ public class OctoApplication {
 		SpringApplication.run(OctoApplication.class, args);
 	}
 
+	//Test radi li ovo
 }
