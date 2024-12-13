@@ -9,6 +9,4 @@ public class OctoApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(OctoApplication.class, args);
 	}
-
-	//Test radi li ovo
 }
