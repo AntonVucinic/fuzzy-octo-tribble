@@ -3,6 +3,10 @@
   margin: 0 auto;
 }
 
+.resize {
+  resize: vertical;
+}
+
 .list-group {
   background-color: #3CBBB1 !important;
   color: white !important;
