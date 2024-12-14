@@ -1,0 +1,259 @@
+{
+  "openapi": "3.1.0",
+  "info": { "title": "FastAPI", "version": "0.1.0" },
+  "paths": {
+    "/tax-info/text": {
+      "post": {
+        "summary": "Upload Text",
+        "operationId": "upload_text_tax_info_text_post",
+        "requestBody": {
+          "content": {
+            "text/plain": { "schema": { "type": "string", "title": "Law" } }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Schema" }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tax-info/file": {
+      "post": {
+        "summary": "Upload File",
+        "operationId": "upload_file_tax_info_file_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_upload_file_tax_info_file_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Schema" }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Body_upload_file_tax_info_file_post": {
+        "properties": {
+          "law": { "type": "string", "format": "binary", "title": "Law" }
+        },
+        "type": "object",
+        "required": ["law"],
+        "title": "Body_upload_file_tax_info_file_post"
+      },
+      "CrossBorder": {
+        "properties": {
+          "electronic_services": {
+            "type": "boolean",
+            "title": "Electronic Services"
+          },
+          "imports": { "type": "number", "title": "Imports" },
+          "exports": { "type": "number", "title": "Exports" }
+        },
+        "type": "object",
+        "required": ["electronic_services", "imports", "exports"],
+        "title": "CrossBorder"
+      },
+      "Deadline": {
+        "properties": {
+          "filing_deadline": { "type": "string", "title": "Filing Deadline" },
+          "payment_deadline": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Payment Deadline"
+          }
+        },
+        "type": "object",
+        "required": ["filing_deadline", "payment_deadline"],
+        "title": "Deadline"
+      },
+      "Filing": {
+        "properties": {
+          "filing_frequency": { "type": "string", "title": "Filing Frequency" },
+          "applies_to": {
+            "items": { "type": "string" },
+            "type": "array",
+            "title": "Applies To"
+          },
+          "electronic_filing": {
+            "type": "boolean",
+            "title": "Electronic Filing"
+          },
+          "deadlines": {
+            "items": { "$ref": "#/components/schemas/Deadline" },
+            "type": "array",
+            "title": "Deadlines"
+          },
+          "penalites": {
+            "items": { "type": "string" },
+            "type": "array",
+            "title": "Penalites"
+          }
+        },
+        "type": "object",
+        "required": [
+          "filing_frequency",
+          "applies_to",
+          "electronic_filing",
+          "deadlines",
+          "penalites"
+        ],
+        "title": "Filing"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": { "$ref": "#/components/schemas/ValidationError" },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "Registration": {
+        "properties": {
+          "establishment_class": {
+            "type": "string",
+            "title": "Establishment Class"
+          },
+          "threshold": { "type": "number", "title": "Threshold" }
+        },
+        "type": "object",
+        "required": ["establishment_class", "threshold"],
+        "title": "Registration"
+      },
+      "Return": {
+        "properties": {
+          "filing": { "$ref": "#/components/schemas/Filing" },
+          "annual_return": { "type": "boolean", "title": "Annual Return" },
+          "payment_deadline": { "type": "string", "title": "Payment Deadline" },
+          "payment_currency": { "type": "string", "title": "Payment Currency" },
+          "language": { "type": "string", "title": "Language" },
+          "other_requirements": {
+            "type": "string",
+            "title": "Other Requirements"
+          }
+        },
+        "type": "object",
+        "required": [
+          "filing",
+          "annual_return",
+          "payment_deadline",
+          "payment_currency",
+          "language",
+          "other_requirements"
+        ],
+        "title": "Return"
+      },
+      "Schema": {
+        "properties": {
+          "vatRates": {
+            "items": { "$ref": "#/components/schemas/VatRate" },
+            "type": "array",
+            "title": "Vatrates"
+          },
+          "exemptions": {
+            "items": { "type": "string" },
+            "type": "array",
+            "title": "Exemptions"
+          },
+          "registration_requirements": {
+            "$ref": "#/components/schemas/Registration"
+          },
+          "returns": {
+            "anyOf": [
+              { "$ref": "#/components/schemas/Return" },
+              { "type": "null" }
+            ]
+          },
+          "cross_border_transactions": {
+            "$ref": "#/components/schemas/CrossBorder"
+          },
+          "deadlines": { "$ref": "#/components/schemas/Deadline" },
+          "invoice": {
+            "items": { "type": "string" },
+            "type": "array",
+            "title": "Invoice"
+          },
+          "penalties": { "type": "string", "title": "Penalties" }
+        },
+        "type": "object",
+        "required": [
+          "vatRates",
+          "exemptions",
+          "registration_requirements",
+          "returns",
+          "cross_border_transactions",
+          "deadlines",
+          "invoice",
+          "penalties"
+        ],
+        "title": "Schema"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": { "anyOf": [{ "type": "string" }, { "type": "integer" }] },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": { "type": "string", "title": "Message" },
+          "type": { "type": "string", "title": "Error Type" }
+        },
+        "type": "object",
+        "required": ["loc", "msg", "type"],
+        "title": "ValidationError"
+      },
+      "VatRate": {
+        "properties": {
+          "rate": { "type": "number", "title": "Rate" },
+          "type_": {
+            "type": "string",
+            "enum": ["Standard", "Special"],
+            "title": "Type"
+          },
+          "desc": { "type": "string", "title": "Desc" }
+        },
+        "type": "object",
+        "required": ["rate", "type_", "desc"],
+        "title": "VatRate"
+      }
+    }
+  }
+}
