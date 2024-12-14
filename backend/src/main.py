@@ -9,57 +9,52 @@ class VatRate(BaseModel):
     type_: Literal["Standard", "Special"]
     desc: str
 
+class Registration(BaseModel):
+    establishment_class: str
+    threshold: float
 
-class RegistrationRequirements(BaseModel):
-    thresholds: float
-    voluntary_registration: bool
-    foreign_company_rules: str
 
+class Deadline(BaseModel):
+    filing_deadline: str #Fonoa has string
+    payment_deadline: str #Fonoa has string
+
+
+class Return(BaseModel):
+    filing:Filing
+    annual_return:bool
+    payment_deadline:str
+    payment_currency:str
+    language:str
+    other_requirements:str
 
 class Filing(BaseModel):
     filing_frequency: str
-    required_documentation: list[str]
+    applies_to: list[str]
     electronic_filing: bool
     deadlines: list[Deadline]
     penalites: list[str]
 
-class Deadline(BaseModel):
-    ...
-
-
-class Return(BaseModel):
-    eligible_costs: list[str]
-    exclusions: list[str]
-    time_limits: list[str]
-    process: str
-
-
 class CrossBorder(BaseModel):
-    imports: str
-    exports: str
-    intra_eu_tranasactions: str
-    digital_services: str
-
-
-class IndustrySpecific(BaseModel):
-    rules: dict[str, list[str]]
+    electronic_services: bool
+    imports: float
+    exports: float
 
 
 class Authorities(BaseModel):
-    contact_information: str
-    guidance_documents: list[str]
-    advisory_services: bool
+    contact_information: bool
 
 
 class Schema(BaseModel):
     vatRates: list[VatRate]
     exemptions: list[str]
-    registration_requirements: RegistrationRequirements
-    filing_and_compliance: Filing
-    input_vat_recovery: Return
+    registration_requirements: Registration
+    # filing_and_compliance: Filing Inside returns
+    returns:Return
     cross_border_transactions: CrossBorder
-    industry_specific_rules: IndustrySpecific
-    local_vat_authorities: Authorities
+    deadlines: Deadline
+    invoice: list[str]
+    penalties: str
+
 
 
 app = FastAPI()
