@@ -1,6 +1,6 @@
 import React from 'react';
 const CrossborderTransactions = ({ data }) => {
-    return (
+  return (
     <div className="container mt-4">
       <h3>Cross-border Transactions</h3>
       <ul className="list-group">
@@ -13,18 +13,18 @@ const CrossborderTransactions = ({ data }) => {
         <li className="list-group-item">
           <div className="row">
             <div className="col-4"><strong>Exports:</strong></div>
-            <div className="col-8">{data.exports}</div>
+            <div className="col-8">{(data.exports - 1) * 100}%</div>
           </div>
         </li>
         <li className="list-group-item">
           <div className="row">
             <div className="col-4"><strong>Imports:</strong></div>
-            <div className="col-8">{data.imports}</div>
+            <div className="col-8">{(data.imports - 1) * 100}%</div>
           </div>
         </li>
       </ul>
     </div>
-    );
+  );
 };
 
 export default CrossborderTransactions;

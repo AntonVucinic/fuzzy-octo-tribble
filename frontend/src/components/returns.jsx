@@ -97,12 +97,14 @@ const Returns = ({ data }) => {
         </li>
 
         {/* Penalties */}
-        <li className="list-group-item">
-          <div className="row">
-            <div className="col-4"><strong>Penalties:</strong></div>
-            <div className="col-8">{data.filing.penalties.join(', ')}</div>
-          </div>
-        </li>
+        {data.filing.penalties ?
+          <li className="list-group-item">
+            <div className="row">
+              <div className="col-4"><strong>Penalties:</strong></div>
+              <div className="col-8">{data.filing.penalties.join(', ')}</div>
+            </div>
+          </li>
+          : null}
 
         {/* Language */}
         <li className="list-group-item">
@@ -112,13 +114,6 @@ const Returns = ({ data }) => {
           </div>
         </li>
 
-        {/* Payment Currency */}
-        <li className="list-group-item">
-          <div className="row">
-            <div className="col-4"><strong>Payment Currency:</strong></div>
-            <div className="col-8">{data.payment_currency}</div>
-          </div>
-        </li>
       </ul>
     </div>
   );

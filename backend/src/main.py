@@ -5,6 +5,8 @@ from typing import Annotated, Any, Literal
 
 import google.generativeai as genai
 from fastapi import Body, FastAPI, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.routing import APIRoute
 from pydantic import BaseModel
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -21,15 +23,13 @@ class Registration(BaseModel):
 
 
 class Deadline(BaseModel):
-    filing_deadline: str  # Fonoa has string
-    payment_deadline: str | None  # Fonoa has string
+    filing_deadline: str
+    payment_deadline: str | None
 
 
 class Return(BaseModel):
     filing: Filing
     annual_return: bool
-    payment_deadline: str
-    payment_currency: str
     language: str
     other_requirements: str
 
@@ -56,15 +56,27 @@ class Schema(BaseModel):
     vatRates: list[VatRate]
     exemptions: list[str]
     registration_requirements: Registration
-    # filing_and_compliance: Filing Inside returns
     returns: Return | None
     cross_border_transactions: CrossBorder
-    deadlines: Deadline
-    invoice: list[str]
+    invoice_requirements: list[str]
     penalties: str
 
 
-app = FastAPI()
+def custom_generate_unique_id(route: APIRoute):
+    return route.name
+
+
+app = FastAPI(generate_unique_id_function=custom_generate_unique_id)
+
+origins = ["http://localhost:8000", "http://localhost:5173"]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 class Settings(BaseSettings):
@@ -104,6 +116,8 @@ async def upload_file(law: UploadFile) -> Any:
     file = genai.upload_file(
         law.file, mime_type="application/pdf"  # pyright: ignore[reportArgumentType]
     )
+    with open("t.pdf", "wb") as f:
+        f.write(await law.read())
     prompt = f"""A user has uploaded a PDF file of this countries tax law.
     This law will most most likely be written in the nations official language so it's crucial to adapt and not look for literal symobls in text.
     Summarize this law using the provided JSON schema.
