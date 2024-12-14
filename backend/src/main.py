@@ -1,8 +1,13 @@
 from __future__ import annotations
 
-from typing import Literal
-from fastapi import FastAPI, UploadFile
+import json
+from typing import Annotated, Any, Literal
+
+import google.generativeai as genai
+from fastapi import Body, FastAPI, UploadFile
 from pydantic import BaseModel
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
 
 class VatRate(BaseModel):
     rate: float
@@ -10,64 +15,102 @@ class VatRate(BaseModel):
     desc: str
 
 
-class RegistrationRequirements(BaseModel):
-    thresholds: float
-    voluntary_registration: bool
-    foreign_company_rules: str
+class Registration(BaseModel):
+    establishment_class: str
+    threshold: float
+
+
+class Deadline(BaseModel):
+    filing_deadline: str  # Fonoa has string
+    payment_deadline: str | None  # Fonoa has string
+
+
+class Return(BaseModel):
+    filing: Filing
+    annual_return: bool
+    payment_deadline: str
+    payment_currency: str
+    language: str
+    other_requirements: str
 
 
 class Filing(BaseModel):
     filing_frequency: str
-    required_documentation: list[str]
+    applies_to: list[str]
     electronic_filing: bool
     deadlines: list[Deadline]
     penalites: list[str]
 
-class Deadline(BaseModel):
-    ...
-
-
-class Return(BaseModel):
-    eligible_costs: list[str]
-    exclusions: list[str]
-    time_limits: list[str]
-    process: str
-
 
 class CrossBorder(BaseModel):
-    imports: str
-    exports: str
-    intra_eu_tranasactions: str
-    digital_services: str
-
-
-class IndustrySpecific(BaseModel):
-    rules: dict[str, list[str]]
+    electronic_services: bool
+    imports: float
+    exports: float
 
 
 class Authorities(BaseModel):
-    contact_information: str
-    guidance_documents: list[str]
-    advisory_services: bool
+    contact_information: bool
 
 
 class Schema(BaseModel):
     vatRates: list[VatRate]
     exemptions: list[str]
-    registration_requirements: RegistrationRequirements
-    filing_and_compliance: Filing
-    input_vat_recovery: Return
+    registration_requirements: Registration
+    # filing_and_compliance: Filing Inside returns
+    returns: Return | None
     cross_border_transactions: CrossBorder
-    industry_specific_rules: IndustrySpecific
-    local_vat_authorities: Authorities
+    deadlines: Deadline
+    invoice: list[str]
+    penalties: str
 
 
 app = FastAPI()
 
-@app.get("/tax-info/text")
-async def upload_text(law: str):
-    return Schema.model_json_schema()
 
-@app.get("/tax-info/file")
-async def upload_file(law: UploadFile) -> Schema:
-    return ...
+class Settings(BaseSettings):
+    api_key: str
+    model_config = SettingsConfigDict(env_file=".env")
+
+
+settings = Settings()  # pyright: ignore[reportCallIssue]
+model = genai.GenerativeModel("gemini-1.5-flash")
+model_config = genai.GenerationConfig(
+    response_mime_type="application/json", response_schema=Schema
+)
+
+genai.configure(api_key=settings.api_key)
+
+
+@app.post("/tax-info/text", response_model=Schema)
+async def upload_text(law: Annotated[str, Body(media_type="text/plain")]) -> Any:
+    prompt = f"""A user has uploaded the text of this countries tax law.
+    This law will most most likely be written in the nations official language so it's crucial to adapt and not look for literal symobls in text.
+    Summarize this law using the provided JSON schema.
+
+    ---
+
+    {law}
+    """
+    response = model.generate_content(prompt, generation_config=model_config)
+    return json.loads(
+        response.to_dict()["candidates"][0][  # pyright: ignore[reportIndexIssue]
+            "content"
+        ]["parts"][0]["text"]
+    )
+
+
+@app.post("/tax-info/file", response_model=Schema)
+async def upload_file(law: UploadFile) -> Any:
+    file = genai.upload_file(
+        law.file, mime_type="application/pdf"  # pyright: ignore[reportArgumentType]
+    )
+    prompt = f"""A user has uploaded a PDF file of this countries tax law.
+    This law will most most likely be written in the nations official language so it's crucial to adapt and not look for literal symobls in text.
+    Summarize this law using the provided JSON schema.
+    """
+    response = model.generate_content([prompt, file], generation_config=model_config)
+    return json.loads(
+        response.to_dict()["candidates"][0][  # pyright: ignore[reportIndexIssue]
+            "content"
+        ]["parts"][0]["text"]
+    )
