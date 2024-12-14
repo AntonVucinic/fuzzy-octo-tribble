@@ -1,0 +1,41 @@
+#root {
+  width: 768px;
+  margin: 0 auto;
+}
+
+.list-group {
+  background-color: #3CBBB1 !important;
+  color: white !important;
+}
+
+@media only screen and (max-width: 768px) {
+  /* For mobile phones: */
+  #root {
+    width: 100vw;
+  }
+}
+
+.input-group {
+  width: 100%;
+}
+
+.input-group-append {
+  display: flex;
+  align-items: center;
+}
+
+.file-info {
+  margin-top: 5px;
+  padding: 5px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+}
+
+.file-info ul {
+  margin: 0;
+  padding: 0;
+}
+
+.file-info li {
+  padding: 2px 0;
+}
