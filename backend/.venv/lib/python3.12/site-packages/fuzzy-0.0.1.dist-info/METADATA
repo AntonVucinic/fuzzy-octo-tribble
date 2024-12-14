@@ -1,4 +1,0 @@
-Metadata-Version: 2.1
-Name: fuzzy
-Version: 0.0.1
-Requires-Dist: fastapi[standard]
